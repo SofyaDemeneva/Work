@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Work;
 
@@ -127,25 +127,25 @@ namespace Work
     public class BanquetReservation : Reservation { }
 
     // Loyalty System
-    public abstract class LoyaltyComponent
+    public interface ILoyaltyComponent
     {
-        public abstract void Add(LoyaltyComponent component);
-        public abstract void Remove(LoyaltyComponent component);
-        public abstract int GetPoints();
+        void Add(ILoyaltyComponent component);
+        void Remove(ILoyaltyComponent component);
+        int GetPoints();
     }
 
-    public class BasicLoyalty : LoyaltyComponent
+    public class BasicLoyalty : ILoyaltyComponent
     {
-        public override void Add(LoyaltyComponent component) { }
-        public override void Remove(LoyaltyComponent component) { }
-        public override int GetPoints() => 0;
+        public void Add(ILoyaltyComponent component) { }
+        public void Remove(ILoyaltyComponent component) { }
+        public int GetPoints() => 0;
     }
 
-    public class PremiumLoyalty : LoyaltyComponent
+    public class PremiumLoyalty : ILoyaltyComponent
     {
-        public override void Add(LoyaltyComponent component) { }
-        public override void Remove(LoyaltyComponent component) { }
-        public override int GetPoints() => 0;
+        public void Add(ILoyaltyComponent component) { }
+        public void Remove(ILoyaltyComponent component) { }
+        public int GetPoints() => 0;
     }
 
     public class LoyaltyProgram
@@ -157,7 +157,6 @@ namespace Work
         public void RedeemPoints(int points) { }
     }
 
-    
 
     // Client and Orders
     public class Client
@@ -180,7 +179,7 @@ namespace Work
         public void NotifyClient() { }
     }
 
-    public interface OrderObserver
+    public interface IOrderObserver
     {
         void UpdateStatus();
     }
@@ -213,6 +212,14 @@ namespace Work
     }
 
     // Payment System
+    public class PaymentSystem
+    {
+        public string PaymentMethod { get; set; }
+        public double Amount { get; set; }
+
+        public void Pay() { }
+        public void Refund() { }
+    }
     public interface PaymentMethod
     {
         void ProcessPayment(double amount);
@@ -233,14 +240,7 @@ namespace Work
         public void ProcessPayment(double amount) { }
     }
 
-    public class PaymentSystem
-    {
-        public string PaymentMethod { get; set; }
-        public double Amount { get; set; }
-
-        public void Pay() { }
-        public void Refund() { }
-    }
+   
 
     // Inventory and Supplier
     public class Supplier
@@ -257,20 +257,20 @@ namespace Work
         public int Quantity { get; set; }
 
         public void CheckStock() { }
-        public void ReplenishStock(ReplenishStrategy strategy) { }
+        public void ReplenishStock(IReplenishStrategy strategy) { }
     }
 
-    public interface ReplenishStrategy
+    public interface IReplenishStrategy
     {
         void Execute();
     }
 
-    public class RegularReplenish : ReplenishStrategy
+    public class RegularReplenish : IReplenishStrategy
     {
         public void Execute() { }
     }
 
-    public class AutoReplenish : ReplenishStrategy
+    public class AutoReplenish : IReplenishStrategy
     {
         public void Execute() { }
     }
