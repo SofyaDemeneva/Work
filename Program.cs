@@ -3,68 +3,116 @@ using System.Collections.Generic;
 using static Work.Client;
 
 
-// Декораторы для блюд и напитков
 namespace Work
 {
     
-    // Singleton for MenuManager
+    
     public class MenuManager
     {
         private static MenuManager _instance;
         private static readonly object _lock = new object();
 
-        public List<Dish> Dishes { get; private set; } = new List<Dish>();
-        public List<Drink> Drinks { get; private set; } = new List<Drink>();
+        public List<Dish> Dishes { get; set; } = new List<Dish>();
+        public List<Drink> Drinks { get; set; } = new List<Drink>();
 
         private MenuManager() { }
+
 
         public static MenuManager GetInstance()
         {
             if (_instance == null)
             {
-                lock (_lock)
-                {
-                    if (_instance == null)
-                        _instance = new MenuManager();
-                }
+                _instance = new MenuManager();
             }
             return _instance;
+            
         }
 
-        public void AddDish(Dish dish) => Dishes.Add(dish);
-        public void RemoveDish(Dish dish) => Dishes.Remove(dish);
-        public void AddDrink(Drink drink) => Drinks.Add(drink);
-        public void RemoveDrink(Drink drink) => Drinks.Remove(drink);
+        public void AddDish(Dish dish) {
+            try
+            {
+                Dishes.Add(dish);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при добавлении блюда: {ex.Message}");
+            }
+        }
+        public void RemoveDish(Dish dish) {
+            try
+            {
+                if (!Dishes.Remove(dish))
+                {
+                    Console.WriteLine("Ошибка: блюдо не найдено в списке.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при удалении блюда: {ex.Message}");
+            }
+        }
+        public void AddDrink(Drink drink)
+        {
+            try
+            {
+                Drinks.Add(drink);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при добавлении напитка: {ex.Message}");
+            }
+        }
+
+        public void RemoveDrink(Drink drink)
+        { 
+            try
+            {
+                if (!Drinks.Remove(drink))
+                {
+                    Console.WriteLine("Ошибка: напиток не найден в списке.");
+                }
+}
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при удалении напитка: {ex.Message}");
+            }
+        }
 
         public List<MenuItem> GetMenu()
         {
-            List<MenuItem> menu = new List<MenuItem>();
-            menu.AddRange(Dishes);
-            menu.AddRange(Drinks);
-            return menu;
+            try
+            {
+                List<MenuItem> menu = new List<MenuItem>();
+                menu.AddRange(Dishes);
+                menu.AddRange(Drinks);
+                return menu;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при получении меню: {ex.Message}");
+                return new List<MenuItem>();
+            }
         }
     }
 
-    // Base class for menu items
     public abstract class MenuItem
     {
         public string Name { get; set; }
         public double Price { get; set; }
+        public string Type { get; set; }
 
         public abstract double GetCost();
     }
-
-    // Dish and Drink classes
     public class Dish : MenuItem
     {
-        public string Type { get; set; }
+        
 
         public override double GetCost() => Price;
     }
 
     public class Drink : MenuItem
     {
-        public string Type { get; set; }
+        
 
         public override double GetCost() => Price;
     }
@@ -95,7 +143,7 @@ namespace Work
         void Execute();
     }
 
-    // Command to handle orders
+   
     public class TakeOrderCommand : ICommand
     {
         private readonly Waiter _waiter;
@@ -132,26 +180,14 @@ namespace Work
         }
     }
 
-    public class OrderInvoker
-    {
-        private readonly List<ICommand> _commands = new List<ICommand>();
+    
 
-        public void AddCommand(ICommand command) => _commands.Add(command);
-
-        public void ExecuteCommands()
-        {
-            foreach (var command in _commands)
-                command.Execute();
-            _commands.Clear();
-        }
-    }
-
-    // Order class with Observer
+   
     public class Order
     {
-        public List<MenuItem> Items { get; private set; } = new List<MenuItem>();
+        public List<MenuItem> Items { get; set; } = new List<MenuItem>();
         public DateTime CreationTime { get; set; }
-        public string Status { get; private set; } = "Ожидание";
+        public string Status { get; set; } = "Ожидание";
 
         public void AddItem(MenuItem item) => Items.Add(item);
         public void ChangeStatus(string status) => Status = status;
@@ -177,23 +213,53 @@ namespace Work
         }
     }
 
-
     
+
+    public class OrderInvoker
+    {
+        private readonly List<ICommand> _commands = new List<ICommand>();
+
+        public void AddCommand(ICommand command) => _commands.Add(command);
+
+        public void ExecuteCommands()
+        {
+            foreach (var command in _commands)
+                command.Execute();
+            _commands.Clear();
+        }
+    }
+
+
     public class Client 
     {
         public string Name { get; set; }
         public string ContactInfo { get; set; }
-        public List<Order> Orders { get; private set; } = new List<Order>();
+        public List<Order> Orders { get; set; } = new List<Order>();
         public Order CreateOrder()
         {
-            var order = new Order { CreationTime = DateTime.Now };
-            Orders.Add(order);
-            Console.WriteLine($"Клиент {Name} создал новый заказ.");
-            return order;
+            try
+            {
+                var order = new Order { CreationTime = DateTime.Now };
+                Orders.Add(order);
+                Console.WriteLine($"Клиент {Name} создал новый заказ.");
+                return order;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при создании заказа: {ex.Message}");
+                throw;
+            }
         }
         public void ReceiveNotification(string message)
         {
-            Console.WriteLine($"Клиент {Name} получил уведомление: {message}");
+            try
+            {
+                Console.WriteLine($"Клиент {Name} получил уведомление: {message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при отправке уведомления клиенту: {ex.Message}");
+            }
         }
     }
     public abstract class Reservation
@@ -201,30 +267,31 @@ namespace Work
             public DateTime Time { get; set; }
             public int NumberOfPeople { get; set; }
             public string ReservationType { get; set; }
-            public Client Client { get; set; } // Связь с клиентом
+            public Client Client { get; set; } 
 
             public static Reservation CreateReservation(string type)
             {
-                return type switch
+                try
                 {
-                    "Standard" => new StandardReservation { ReservationType = "Стандартная" },
-                    "VIP" => new VIPReservation { ReservationType = "VIP" },
-                    "Banquet" => new BanquetReservation { ReservationType = "Банкет" },
-                    _ => throw new ArgumentException("Неизвестный тип резервации")
-                };
+                    return type switch
+                    {
+                        "Standard" => new StandardReservation { ReservationType = "Стандартная" },
+                        "VIP" => new VIPReservation { ReservationType = "VIP" },
+                        "Banquet" => new BanquetReservation { ReservationType = "Банкет" },
+                        _ => throw new ArgumentException("Неизвестный тип резервации")
+                    };
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine($"Ошибка при создании резервации: {ex.Message}");
+                    throw;
+                }
             }
         }
-        
-    
-    
+    class StandardReservation : Reservation { }
+    public class VIPReservation : Reservation { }
+    public class BanquetReservation : Reservation { }
 
-        public class StandardReservation : Reservation { }
-
-        public class VIPReservation : Reservation { }
-
-        public class BanquetReservation : Reservation { }
-
-    // Employee and Chain of Responsibility
     public abstract class Employee
     {
         public string Name { get; set; }
@@ -269,7 +336,6 @@ namespace Work
         }
     }
 
-    // Inventory and Strategy
     public interface IReplenishStrategy
     {
         void Execute();
@@ -303,25 +369,40 @@ namespace Work
         public int Quantity { get; set; }
         public bool CheckStock(int requiredQuantity)
         {
-            if (Quantity >= requiredQuantity)
+            try
             {
-                Console.WriteLine($"Достаточно {ItemName} на складе: {Quantity} единиц.");
-                return true;
+                if (Quantity >= requiredQuantity)
+                {
+                    Console.WriteLine($"Достаточно {ItemName} на складе: {Quantity} единиц.");
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine($"Недостаточно {ItemName} на складе. Доступно: {Quantity}, требуется: {requiredQuantity}.");
+                    return false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine($"Недостаточно {ItemName} на складе. Доступно: {Quantity}, требуется: {requiredQuantity}.");
+                Console.WriteLine($"Ошибка при проверке запасов: {ex.Message}");
                 return false;
             }
         }
         public void Replenish(IReplenishStrategy strategy)
         {
-            strategy.Execute();
-            Console.WriteLine($"{ItemName} теперь имеет {Quantity} единиц.");
+            try
+            {
+                strategy.Execute();
+                Console.WriteLine($"{ItemName} теперь имеет {Quantity} единиц.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при пополнении запасов: {ex.Message}");
+            }
         }
     }
 
-    // Reports and Template Method
+   
     public abstract class Report
     {
         public DateTime StartDate { get; set; }
@@ -351,8 +432,7 @@ namespace Work
         protected override void AnalyzeData() => Console.WriteLine("Анализ данных о заказах...");
         protected override void OutputReport() => Console.WriteLine("Отчёт о заказах сгенерирован.");
     }
-    // Отчет о запасах
-
+    
 
     public interface PaymentMethod
     {
@@ -411,7 +491,7 @@ namespace Work
     public class LoyaltyProgram
     {
         public Client Client { get; set; }
-        public int PointsBalance { get; private set; }
+        public int PointsBalance { get; set; }
 
         public void AddPoints(int points)
         {
@@ -431,12 +511,8 @@ namespace Work
                 Console.WriteLine($"{Client.Name} недостаточно очков для использования.");
             }
         }
-        public interface ICommand
-        {
-            void Execute();
-        }
 
-        // Команда для принятия заказа официантом
+
         public class TakeOrderCommand : ICommand
         {
             private readonly Waiter _waiter;
@@ -455,7 +531,7 @@ namespace Work
             }
         }
 
-        // Команда для приготовления заказа шефом
+
         public class PrepareOrderCommand : ICommand
         {
             private readonly Chef _chef;
@@ -471,21 +547,6 @@ namespace Work
             {
                 Console.WriteLine($"Шеф-повар {_chef.Name} готовит заказ.");
                 _chef.HandleTask("Приготовить блюдо");
-            }
-        }
-
-        // Invoker для управления выполнением команд
-        public class OrderInvoker
-        {
-            private readonly List<ICommand> _commands = new List<ICommand>();
-
-            public void AddCommand(ICommand command) => _commands.Add(command);
-
-            public void ExecuteCommands()
-            {
-                foreach (var command in _commands)
-                    command.Execute();
-                _commands.Clear();
             }
         }
     }
